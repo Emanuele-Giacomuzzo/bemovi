@@ -7,7 +7,7 @@
 # Samuel Huerlemann, Emanuele Giacomuzzo
 ######################################################################
 rm(list=ls())
-setwd("/media/mendel-himself/ID_059/Test_Data_Bemovi_Package")
+setwd('/media/mendel-himself/ID_061_Ema2/training_004_with_Felix/t1')
 
 # load package
 # library(devtools)
@@ -18,10 +18,10 @@ library(doParallel)
 library(foreach)
 
 #Define memory to be allocated
-memory.alloc <- 150000 #-needs_to_be_specified
+memory.alloc <- 240000 #-needs_to_be_specified
 memory.per.identifier <- 20000 #-needs_to_be_specified
 memory.per.linker <- 5000 #-needs_to_be_specified
-memory.per.overlay <- 5000 #-needs_to_be_specified
+memory.per.overlay <- 60000 #-needs_to_be_specified
 
 # UNIX
 # set paths to tools folder and particle linker
@@ -50,7 +50,7 @@ ijmacs.folder <- "ijmacs/"
 fps <- 25 #-needs_to_be_specified
 
 # length of video (in frames)
-total_frames <- 250 #-needs_to_be_specified
+total_frames <- 125 #-needs_to_be_specified
 
 #Dimensions of the videos in pixels
 width=2048 #-needs_to_be_specified
@@ -70,7 +70,7 @@ video.format <- "cxd" #-needs_to_be_specified
 
 # setup
 difference.lag <- 10
-thresholds <- c(10,255) # don't change the second value
+thresholds <- c(20,255) # don't change the second value
 # thresholds <- c(50,255)
 
 # MORE PARAMETERS (USUALLY NOT CHANGED)
@@ -82,7 +82,7 @@ thresholds <- c(10,255) # don't change the second value
 # tested species: Tet, Col, Pau, Pca, Eug, Chi, Ble, Ceph, Lox, Spi
 
 # min and max size: area in pixels
-particle_min_size <- 50
+particle_min_size <- 10
 particle_max_size <- 1000
 
 # number of adjacent frames to be considered for linking particles
@@ -117,7 +117,7 @@ convert_to_avi(to.data, raw.video.folder, raw.avi.folder, metadata.folder, tools
 # check_video_file_names(to.data,raw.avi.folder,video.description.folder,video.description.file)
 
 # check whether the thresholds make sense (set "dark backgroud" and "red")
-# check_threshold_values(to.data, raw.avi.folder, ijmacs.folder, 0, difference.lag, thresholds, tools.path,  memory.alloc)
+# check_threshold_values(to.data, raw.avi.folder, ijmacs.folder, 2, difference.lag, thresholds, tools.path,  memory.alloc)
 
 # identify particles
 locate_and_measure_particles(to.data, raw.avi.folder, particle.data.folder, difference.lag, min_size = particle_min_size, 
@@ -126,7 +126,7 @@ locate_and_measure_particles(to.data, raw.avi.folder, particle.data.folder, diff
 
 # link the particles
 link_particles(to.data, particle.data.folder, trajectory.data.folder, linkrange = trajectory_link_range, disp = trajectory_displacement, 
-               start_vid = 1, memory = memory.alloc, memory_per_linkerProcess = memory.per.linker, raw.avi.folder, max.cores=detectCores()-1, max_time = 24)
+               start_vid = 1, memory = memory.alloc, memory_per_linkerProcess = memory.per.linker, raw.avi.folder, max.cores=detectCores()-1, max_time = 1)
 
 # merge info from description file and data
 merge_data(to.data, particle.data.folder, trajectory.data.folder, video.description.folder, video.description.file, merged.data.folder)
@@ -144,9 +144,13 @@ morph_mvt <- summarize_trajectories(trajectory.data.filtered, calculate.median=F
 summarize_populations(trajectory.data.filtered, morph_mvt, write=T, to.data, merged.data.folder, video.description.folder, video.description.file, total_frames)
 
 # create overlays for validation
-create.subtitle.overlays(to.data, traj.data=trajectory.data, raw.video.folder, raw.avi.folder, temp.overlay.folder, overlay.folder, fps,
+create.subtitle.overlays(to.data, traj.data=trajectory.data.filtered, raw.video.folder, raw.avi.folder, temp.overlay.folder, overlay.folder, fps,
                          vid.length=total_frames/fps, width, height, tools.path = tools.path, overlay.type="number", video.format)
 
+# Create overlays (old method)
+create_overlays(traj.data = trajectory.data.filtered, to.data = to.data, merged.data.folder = merged.data.folder, raw.video.folder = raw.avi.folder, temp.overlay.folder = "4a_temp_overlays_old/",
+                overlay.folder ="4_overlays_old/", width = width, height = height, difference.lag = difference.lag, type = "traj", predict_spec = F, contrast.enhancement = 1, 
+                IJ.path = "/home/mendel-himself/bemovi_tools", memory = memory.alloc, max.cores = detectCores()-1, memory.per.overlay = memory.per.overlay)
 
 ########################################################################
 # some cleaning up
