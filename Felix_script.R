@@ -19,7 +19,7 @@ library(foreach)
 
 #Define memory to be allocated
 memory.alloc <- 240000 #-needs_to_be_specified
-memory.per.identifier <- 20000 #-needs_to_be_specified
+memory.per.identifier <- 40000 #-needs_to_be_specified
 memory.per.linker <- 5000 #-needs_to_be_specified
 memory.per.overlay <- 60000 #-needs_to_be_specified
 
