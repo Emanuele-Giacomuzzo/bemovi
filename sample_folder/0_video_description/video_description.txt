@@ -1,0 +1,23 @@
+file	date	time	time_point	species	sample_name	cultures	ID	comment
+sample_00001	14.02.22		t0	Ble	Ble_1	14.02.22	1	
+sample_00002	14.02.22		t0	Cep	Cep_1	14.02.22	2	
+sample_00003	14.02.22		t0	Col	Col_1	14.02.22	3	
+sample_00004	14.02.22		t0	Eug	Eug_1	14.02.22	4	
+sample_00005	14.02.22		t0	Eup	Eup_1	14.02.22	5	
+sample_00006	14.02.22		t0	Lox	Lox_1	14.02.22	6	
+sample_00007	14.02.22		t0	Pau	Pau_1	14.02.22	7	
+sample_00008	14.02.22		t0	Pca	Pca_1	14.02.22	8	
+sample_00009	14.02.22		t0	Spi	Spi_1	14.02.22	9	
+sample_00010	14.02.22		t0	Spi_te	Spi_te_1	14.02.22	10	
+sample_00011	14.02.22		t0	Tet	Tet_1	14.02.22	11	
+sample_00012	14.02.22		t0	Ble	Ble_2	14.02.22	1	
+sample_00013	14.02.22		t0	Cep	Cep_2	14.02.22	2	
+sample_00014	14.02.22		t0	Col	Col_2	14.02.22	3	
+sample_00015	14.02.22		t0	Eug	Eug_2	14.02.22	4	
+sample_00016	14.02.22		t0	Eup	Eup_2	14.02.22	5	
+sample_00017	14.02.22		t0	Lox	Lox_2	14.02.22	6	
+sample_00018	14.02.22		t0	Pau	Pau_2	14.02.22	7	
+sample_00019	14.02.22		t0	Pca	Pca_2	14.02.22	8	
+sample_00020	14.02.22		t0	Spi	Spi_2	14.02.22	9	
+sample_00021	14.02.22		t0	Spi_te	Spi_te_2	14.02.22	10	
+sample_00022	14.02.22		t0	Tet	Tet_2	14.02.22	11	
