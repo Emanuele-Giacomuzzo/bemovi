@@ -70,7 +70,7 @@ video.format <- "cxd" #-needs_to_be_specified
 
 # setup
 difference.lag <- 10
-thresholds <- c(20,255) # don't change the second value
+thresholds <- c(13,255) # don't change the second value
 # thresholds <- c(50,255)
 
 # MORE PARAMETERS (USUALLY NOT CHANGED)
