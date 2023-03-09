@@ -104,16 +104,16 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     thresholds <-
       c(min_threshold, 255) # threshold for what is considered background and what is not in ImageJ - the first number should be adjusted, the second should not
     
-    #Set the working directory (to data is the working directory) 
+    #Set working directory
     analysed_folder <- folder_names[folder]
     
-    setwd(paste0(project_folder,
-                 "/",
-                 analysis_type,
-                 "/",
-                 analysed_folder))
+    woking_directory = paste0(project_folder,
+                              "/",
+                              analysis_type,
+                              "/",
+                              analysed_folder)
     
-    to.data <- paste(getwd(), "/", sep = "")
+    setwd(woking_directory)
     
     ######################################################################
     # VIDEO ANALYSIS
@@ -128,7 +128,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     
     # Convert files to compressed avi (takes approx. 2.25 minutes per video)
     convert_to_avi(
-      to.data,
+      working_directory,
       raw.video.folder,
       raw.avi.folder,
       metadata.folder,
@@ -138,12 +138,13 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     )
     
     #test whether file format and naming are fine
-    #check_video_file_names(to.data,raw.avi.folder,
+    #check_video_file_names(working_directory,
+    #                       raw.avi.folder,
     #                       video.description.folder,
     #                       video.description.file)
     
     #test whether the thresholds make sense (set "dark backgroud" and "red")
-    #check_threshold_values(to.data, 
+    #check_threshold_values(working_directory, 
     #                       raw.avi.folder, 
     #                       ijmacs.folder, 
     #                       2, 
@@ -154,7 +155,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     
     # identify particles
     locate_and_measure_particles(
-      to.data,
+      working_directory,
       raw.avi.folder,
       particle.data.folder,
       difference.lag,
@@ -169,7 +170,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     
     # link particles
     link_particles(
-      to.data,
+      working_directory,
       particle.data.folder,
       trajectory.data.folder,
       linkrange = trajectory_link_range,
@@ -184,7 +185,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     
     # merge info from description file and data
     merge_data(
-      to.data,
+      working_directory,
       particle.data.folder,
       trajectory.data.folder,
       video.description.folder,
@@ -193,7 +194,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     )
     
     # load the merged data
-    load(paste0(to.data, merged.data.folder, "Master.RData"))
+    load(paste0(working_directory, merged.data.folder, "Master.RData"))
     
     #filter particles
     trajectory.data.filtered <-
@@ -211,7 +212,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
         trajectory.data.filtered,
         calculate.median = F,
         write = T,
-        to.data,
+        working_directory,
         merged.data.folder
       )
     
@@ -220,7 +221,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
       trajectory.data.filtered,
       morph_mvt,
       write = T,
-      to.data,
+      working_directory,
       merged.data.folder,
       video.description.folder,
       video.description.file,
@@ -229,7 +230,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     
     #create overlays for validation (new method)
     create.subtitle.overlays(
-      to.data,
+      working_directory,
       traj.data = trajectory.data.filtered,
       raw.video.folder,
       raw.avi.folder,
@@ -247,7 +248,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     #create overlays for validation (old method)
     create_overlays(
       traj.data = trajectory.data.filtered,
-      to.data = to.data,
+      to.data = working_directory,
       merged.data.folder = merged.data.folder,
       raw.video.folder = raw.avi.folder,
       temp.overlay.folder = "4a_temp_overlays_old/",
