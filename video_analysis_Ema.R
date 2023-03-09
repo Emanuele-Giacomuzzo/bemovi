@@ -15,27 +15,28 @@ library(foreach)
 
 rm(list = ls())
 
-project_folder = "/media/mendel-himself/ID_061_Ema2/AHSize"
-
+#Project folder with its subfolders to be analysed
+project_folder = "/media/mendel-himself/ID_061_Ema2/AHSize/bin/trouble_shooting"
 folder_names = c("training",
-                 "t0",
                  "t1",
-                 "t2",
-                 "t3",
-                 "t4",
-                 "t5",
-                 "t6",
-                 "t7")
-
+                 "t2")
 n_folders = length(folder_names)
 
-memory.alloc <- 240000 # Define memory to be allocated
-memory.per.identifier <- 40000 # Define memory to be allocated
-memory.per.linker <- 5000 # Define memory to be allocated
-memory.per.overlay <- 60000 # Define memory to be allocated
-tools.path <-
-  "/home/mendel-himself/bemovi_tools/" # set paths to tools folder and particle linker - needs to be specified
+#Memory to be allocated from the computer to BEMOVI & ImageJ
+memory.alloc <- 240000 
+memory.per.identifier <- 40000 
+memory.per.linker <- 5000 
+memory.per.overlay <- 60000
+
+#Assign the BEMOVI tools
+tools.path <- "/home/mendel-himself/bemovi_tools/" # set paths to tools folder and particle linker - needs to be specified
 to.particlelinker <- tools.path
+check_tools_folder(tools.path) #Check if all tools are installed, and if not install them
+system(paste0("chmod a+x ", tools.path, "bftools/bf.sh")) #Ensure computer has permission to run bftools
+system(paste0("chmod a+x ", tools.path, "bftools/bfconvert")) #Ensure computer has permission to run bftools
+system(paste0("chmod a+x ", tools.path, "bftools/showinf")) #Ensure computer has permission to run bftools
+
+#Folder & file names 
 video.description.folder <- "0_video_description/"
 video.description.file <- "video_description.txt"
 raw.video.folder <- "1_raw/"
@@ -48,48 +49,33 @@ overlay.folder <- "4_overlays/"
 merged.data.folder <- "5_merged_data/"
 ijmacs.folder <- "ijmacs/"
 
-######################################################################
-# VIDEO PARAMETERS
-fps <-
-  25   # video frame rate (in frames per second) - needs to be specified
-total_frames <-
-  125 # length of video (in frames) - needs to be specified
-width = 2048 #Width of the videos in pixels - needs to be specified
-height = 2048 #-needs_to_be_specified
-measured_volume <-
-  34.4 # measued µL during sampling for Leica M205 C with 1.6 fold magnification, sample height 0.5 mm and Hamamatsu Orca Flash 4 - needs to be specified
-#measured_volume <- 14.9 # measued µL during sampling for Nikon SMZ1500 with 2 fold magnification, sample height 0.5 mm and Canon 5D Mark III
-pixel_to_scale <-
-  4.05 # µm of a pixel for Leica M205 C with 1.6 fold magnification, sample height 0.5 mm and Hamamatsu Orca Flash 4
-#pixel_to_scale <- 3.79 # µm of a pixel for Nikon SMZ1500 with 2 fold magnification, sample height 0.5 mm and Canon 5D Mark III
-video.format <-
-  "cxd" # format of the videos taken  (one of "avi","cxd","mov","tiff") - needs to be specified
+#Video parameters
+fps <- 25 #Frames per second
+total_frames_per_video <- 125
+video_width = 2048 #pixels
+video_height = 2048 #pixels
+measured_volume <- 34.4 # measued µL during sampling for Leica M205 C with 1.6 fold magnification, sample video_height 0.5 mm and Hamamatsu Orca Flash 4 - needs to be specified
+#measured_volume <- 14.9 # measued µL during sampling for Nikon SMZ1500 with 2 fold magnification, sample video_height 0.5 mm and Canon 5D Mark III
+pixel_to_scale <- 4.05 # µm of a pixel for Leica M205 C with 1.6 fold magnification, sample video_height 0.5 mm and Hamamatsu Orca Flash 4
+#pixel_to_scale <- 3.79 # µm of a pixel for Nikon SMZ1500 with 2 fold magnification, sample video_height 0.5 mm and Canon 5D Mark III
+video.format <- "cxd" # formats supported: "avi","cxd","mov","tiff"
 difference.lag <- 50 #not sure
 
-# MORE PARAMETERS (USUALLY NOT CHANGED)
-######################################################################
-# FILTERING PARAMETERS
+#Filtering parameters (usually not changed, units as defined above in the video parameters)
 # optimized for Perfex Pro 10 stereomicrocope with Perfex SC38800 (IDS UI-3880LE-M-GL) camera
 # tested stereomicroscopes: Perfex Pro 10, Nikon SMZ1500, Leica M205 C
 # tested cameras: Perfex SC38800, Canon 5D Mark III, Hamamatsu Orca Flash 4
 # tested species: Tet, Col, Pau, Pca, Eug, Chi, Ble, Ceph, Lox, Spi
-particle_min_size <- 10 #Smallest particle filtered (area in pixel)
-particle_max_size <- 6000 #Largest particle filtered (area in pixel)
-trajectory_link_range <-
-  3 # number of adjacent frames to be considered for linking particles
-trajectory_displacement <-
-  16 # maximum distance a particle can move between two frames
-filter_min_net_disp <-
-  25 # these values are in the units defined by the parameters above: fps (seconds), measured_volume (microliters) and pixel_to_scale (micometers)
-filter_min_duration <-
-  1 # these values are in the units defined by the parameters above: fps (seconds), measured_volume (microliters) and pixel_to_scale (micometers)
-filter_detection_freq <-
-  0.1 # these values are in the units defined by the parameters above: fps (seconds), measured_volume (microliters) and pixel_to_scale (micometers)
-filter_median_step_length <-
-  3 # these values are in the units defined by the parameters above: fps (seconds), measured_volume (microliters) and pixel_to_scale (micometers)
+particle_min_size <- 10 #Smallest particle filtered (pixels)
+particle_max_size <- 6000 #Largest particle filtered (pixels)
+trajectory_link_range <- 3 # number of adjacent frames to be considered for linking particles
+trajectory_displacement <- 16 # maximum distance a particle can move between two frames
+filter_min_net_disp <- 25 
+filter_min_duration <- 1 
+filter_detection_freq <- 0.1 
+filter_median_step_length <- 3 
 
-
-for (analysis_type in c("main_analysis", "Ble_analysis")) {
+for (analysis_type in c("main_analysis")) {
   for (folder in 1:n_folders) {
     
     #Select the right threshold for your analysis. The min threshold for Ble is higher so that we can get rid of the Chi in the Ble monocultures. 
@@ -115,17 +101,6 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
                               "/")
     
     setwd(working_directory)
-    
-    ######################################################################
-    # VIDEO ANALYSIS
-    
-    #Check if all tools are installed, and if not install them
-    check_tools_folder(tools.path)
-    
-    #Ensure computer has permission to run bftools
-    system(paste0("chmod a+x ", tools.path, "bftools/bf.sh"))
-    system(paste0("chmod a+x ", tools.path, "bftools/bfconvert"))
-    system(paste0("chmod a+x ", tools.path, "bftools/showinf"))
     
     # Convert files to compressed avi (takes approx. 2.25 minutes per video)
     convert_to_avi(
@@ -226,7 +201,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
       merged.data.folder,
       video.description.folder,
       video.description.file,
-      total_frames
+      total_frames_per_video
     )
     
     #create overlays for validation (new method)
@@ -238,9 +213,9 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
       temp.overlay.folder,
       overlay.folder,
       fps,
-      vid.length = total_frames / fps,
-      width,
-      height,
+      vid.length = total_frames_per_video / fps,
+      video_width,
+      video_height,
       tools.path = tools.path,
       overlay.type = "number",
       video.format
@@ -254,8 +229,8 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
       raw.video.folder = raw.avi.folder,
       temp.overlay.folder = "4a_temp_overlays_old/",
       overlay.folder = "4_overlays_old/",
-      width = width,
-      height = height,
+      video_width,
+      video_height,
       difference.lag = difference.lag,
       type = "traj",
       predict_spec = F,
