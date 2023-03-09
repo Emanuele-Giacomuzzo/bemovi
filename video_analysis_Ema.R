@@ -111,7 +111,8 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
                               "/",
                               analysis_type,
                               "/",
-                              analysed_folder)
+                              analysed_folder,
+                              "/")
     
     setwd(working_directory)
     
