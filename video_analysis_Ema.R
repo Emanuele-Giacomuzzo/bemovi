@@ -1,10 +1,9 @@
 ####################################################################
 # R script for analysing video files with BEMOVI (www.bemovi.info)
 #
-# Felix Moerman
+# Author: Felix Moerman
+# Adapted by: Samuel Huerlemann, Emanuele Giacomuzzo
 # Computer = Mendel
-# 12.01.2022 adapted by
-# Samuel Huerlemann, Emanuele Giacomuzzo
 ######################################################################
 
 # library(devtools)
@@ -93,7 +92,7 @@ filter_median_step_length <-
 for (analysis_type in c("main_analysis", "Ble_analysis")) {
   for (folder in 1:n_folders) {
     
-  #Select the right threshold for your analysis. The min threshold for Ble is higher so that we can get rid of the Chi in the Ble monocultures. 
+    #Select the right threshold for your analysis. The min threshold for Ble is higher so that we can get rid of the Chi in the Ble monocultures. 
     if (analysis_type == "main_analysis") {
       min_threshold = 13
     }
@@ -105,6 +104,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     thresholds <-
       c(min_threshold, 255) # threshold for what is considered background and what is not in ImageJ - the first number should be adjusted, the second should not
     
+    #Set the working directory (to data is the working directory) 
     analysed_folder <- folder_names[folder]
     
     setwd(paste0(project_folder,
@@ -113,7 +113,6 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
                  "/",
                  analysed_folder))
     
-    # directories and file names
     to.data <- paste(getwd(), "/", sep = "")
     
     ######################################################################
@@ -138,14 +137,20 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
       video.format
     )
     
+    #test whether file format and naming are fine
+    #check_video_file_names(to.data,raw.avi.folder,
+    #                       video.description.folder,
+    #                       video.description.file)
     
-    # TESTING
-    
-    # check file format and naming
-    # check_video_file_names(to.data,raw.avi.folder,video.description.folder,video.description.file)
-    
-    # check whether the thresholds make sense (set "dark backgroud" and "red")
-    #check_threshold_values(to.data, raw.avi.folder, ijmacs.folder, 2, difference.lag, thresholds, tools.path,  memory.alloc)
+    #test whether the thresholds make sense (set "dark backgroud" and "red")
+    #check_threshold_values(to.data, 
+    #                       raw.avi.folder, 
+    #                       ijmacs.folder, 
+    #                       2, 
+    #                       difference.lag, 
+    #                       thresholds, 
+    #                       tools.path,
+    #                       memory.alloc)
     
     # identify particles
     locate_and_measure_particles(
@@ -162,7 +167,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
       max.cores = detectCores() - 1
     )
     
-    # link the particles
+    # link particles
     link_particles(
       to.data,
       particle.data.folder,
@@ -190,7 +195,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     # load the merged data
     load(paste0(to.data, merged.data.folder, "Master.RData"))
     
-    # filter data: minimum net displacement, their duration, the detection frequency and the median step length
+    #filter particles
     trajectory.data.filtered <-
       filter_data(
         trajectory.data,
@@ -200,7 +205,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
         filter_median_step_length
       )
     
-    # summarize trajectory data to individual-based data
+    #summarize trajectory data to individual-based data
     morph_mvt <-
       summarize_trajectories(
         trajectory.data.filtered,
@@ -210,7 +215,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
         merged.data.folder
       )
     
-    # get sample level info
+    #get sample level info
     summarize_populations(
       trajectory.data.filtered,
       morph_mvt,
@@ -222,7 +227,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
       total_frames
     )
     
-    # create overlays for validation
+    #create overlays for validation (new method)
     create.subtitle.overlays(
       to.data,
       traj.data = trajectory.data.filtered,
@@ -239,7 +244,7 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
       video.format
     )
     
-    # Create overlays (old method)
+    #create overlays for validation (old method)
     create_overlays(
       traj.data = trajectory.data.filtered,
       to.data = to.data,
