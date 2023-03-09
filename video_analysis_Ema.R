@@ -107,13 +107,13 @@ for (analysis_type in c("main_analysis", "Ble_analysis")) {
     #Set working directory
     analysed_folder <- folder_names[folder]
     
-    woking_directory = paste0(project_folder,
+    working_directory = paste0(project_folder,
                               "/",
                               analysis_type,
                               "/",
                               analysed_folder)
     
-    setwd(woking_directory)
+    setwd(working_directory)
     
     ######################################################################
     # VIDEO ANALYSIS
