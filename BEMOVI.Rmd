@@ -1,8 +1,0 @@
----
-title: "BEMOVI"
-author: "Emanuele Giacomuzzo"
-date: "2022-08-10"
-output: html_document
----
-
-![](pics/variables_explained.png)
