@@ -1,0 +1,209 @@
+rm(list = ls())
+
+#install.packages("e1071",dependencies = T)
+#install.packages("devtools",dependencies = T)
+#install_github("pennekampster/bemovi", ref="master")
+#library(devtools)
+
+library(bemovi)
+library(e1071)
+library("here")
+library("tidyverse")
+
+time_points_in_experiment = c("t0", "t1", "t2")
+
+for (time_point in time_points_in_experiment) {
+  
+  #Folder names and paths
+  video.description.folder = "0_video_description/"
+  video.description.file = "video_description.txt"
+  merged.data.folder = "5_merged_data/"
+  monocultures_folder_path = here("13_threshold_analysis", "training", "")
+  mixed_cultures_folder_path = here("13_threshold_analysis", time_point, "")
+  
+  #Parameters used in the video analysis script
+  fps = 25
+  nsv = 5
+  measured_volume = 34.4
+  pixel_to_scale = 4.05
+  filter_min_net_disp = 25
+  filter_min_duration = 1
+  filter_detection_freq = 0.1
+  filter_median_step_length = 3
+  
+  #Load mono-culture trajectories
+  load(paste0(
+    monocultures_folder_path,
+    merged.data.folder,
+    "Master.RData"
+  ))
+  
+  trajectory.data_monocultures = trajectory.data
+  rm(trajectory.data)
+  
+  #Filter mono-culture trajectories (same parameters as in the videos analysis script)
+  trajectory.data_monocultures.filtered = filter_data(
+    trajectory.data_monocultures,
+    filter_min_net_disp,
+    filter_min_duration,
+    filter_detection_freq,
+    filter_median_step_length
+  )
+  
+  #Turn filtered mono-culture trajectories into morph_mvt  
+  morph_mvt = summarize_trajectories(
+    data = trajectory.data_monocultures.filtered,
+    calculate.median = FALSE,
+    write = TRUE,
+    to.data = monocultures_folder_path,
+    merged.data.folder = merged.data.folder
+  ) %>%
+    mutate(comment = NULL)
+  
+  #Turn morph_mvt into training data
+  training_data = morph_mvt[complete.cases(morph_mvt), ]
+  
+  #Construct model
+  svm1 = svm(
+    factor(species) ~
+      mean_grey +
+      sd_grey +
+      mean_area +
+      sd_area +
+      mean_perimeter +
+      mean_turning +
+      sd_turning +
+      sd_perimeter +
+      mean_major +
+      sd_major +
+      mean_minor +
+      sd_minor +
+      mean_ar +
+      sd_ar +
+      duration +
+      max_net  +
+      net_disp +
+      net_speed +
+      gross_disp +
+      max_step +
+      min_step +
+      sd_step +
+      sd_gross_speed +
+      max_gross_speed +
+      min_gross_speed ,
+    data = training_data,
+    probability = T,
+    na.action = na.pass
+  )
+  
+  #Construct confusion matrix
+  confusion.matrix = table(svm1$fitted, training_data$species)
+  confusion.matrix.nd = confusion.matrix
+  diag(confusion.matrix.nd) = 0
+  svm1$confusion = cbind(confusion.matrix,
+                         class.error = rowSums(confusion.matrix.nd) / rowSums(confusion.matrix))
+  
+  print(paste("Confusion matrix of time point", time_point))
+  print(svm1$confusion)
+  
+  #Get species names
+  species.names = unique(trajectory.data_monocultures$species)
+  
+  #Load mixed-cultures trajectories
+  load(paste0(
+    mixed_cultures_folder_path,
+    merged.data.folder,
+    "Master.RData"
+  ))
+  
+  #Rename mixed-cultures trajectories
+  trajectory.data_mixed = trajectory.data
+  rm(trajectory.data)
+  
+  #Filter mixed-culture trajectories (same parameters as in the videos analysis script)
+  trajectory.data_mixed.filtered = filter_data(
+    trajectory.data_mixed,
+    filter_min_net_disp,
+    filter_min_duration,
+    filter_detection_freq,
+    filter_median_step_length
+  )
+  
+  #Turn filtered mixed-culture trajectories into morph_mvt
+  morph_mvt = summarize_trajectories(
+    data = trajectory.data_mixed.filtered,
+    calculate.median = FALSE,
+    write = TRUE,
+    to.data = mixed_cultures_folder_path,
+    merged.data.folder = merged.data.folder) %>%
+    mutate(comment = NULL)
+  
+  #Turn morph_mvt into data to predict
+  data.to.predict = morph_mvt[complete.cases(morph_mvt),]
+  
+  #ID species
+  p.id = predict(object = svm1,
+                 data.to.predict,
+                 type = "response")
+  
+  #Add IDd species
+  data.to.predict$predicted_species = as.character(p.id)
+  
+  #Not sure... 
+  pop.data = summarize_populations(
+    traj.data = trajectory.data_mixed.filtered,
+    sum.data = morph_mvt,
+    write = TRUE,
+    to.data = mixed_cultures_folder_path,
+    merged.data.folder = merged.data.folder,
+    video.description.folder = video.description.folder,
+    video.description.file = video.description.file,
+    total_frames = fps * nsv
+  )
+  
+  species.density = function(sample_output,
+                             indiv_predicted,
+                             species_names,
+                             total_frames,
+                             mv = measured_volume) {
+    samples = unique(indiv_predicted$file)
+    
+    sp.dens = matrix(0,
+                     nrow(sample_output),
+                     length(species_names))
+    
+    colnames(sp.dens) = species_names
+    
+    for (i in 1:length(samples)) {
+      indiv = subset(indiv_predicted, file == samples[i])
+      
+      spec = unique(indiv$predicted_species)
+      
+      for (j in 1:length(spec)) {
+        all.indiv.sp = subset(indiv,
+                              predicted_species == spec[j])
+        
+        dens = sum(all.indiv.sp$N_frames) / total_frames / mv
+        sp.dens[which(sample_output$file == as.character(samples[i])), which(species_names == spec[j])] = dens
+      }
+    }
+    
+    return(cbind(sample_output, sp.dens))
+    
+  }
+  
+  output = species.density(
+    pop.data,
+    data.to.predict,
+    species.names,
+    total_frames = fps * nsv,
+    mv = measured_volume
+  )
+  
+  file_name = paste0("species_ID_", time_point, ".csv")
+  
+  write.csv(output,
+            here("13_threshold_analysis", "species_ID_results", file_name))
+  rm(output)
+  
+}
