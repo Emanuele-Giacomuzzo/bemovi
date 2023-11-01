@@ -1,3 +1,7 @@
+#Originally written by Lynn Govaert, then modified by Emanuele Giacomuzzo. 
+#See https://github.com/Emanuele-Giacomuzzo/bemovi/blob/master/species_id_example.html for an explanation with example of this script.
+#The script is not commented to be kept clean.
+
 rm(list = ls())
 #library(devtools)
 #install.packages("e1071",dependencies = T)
