@@ -232,7 +232,7 @@ for (threshold in threshold_levels) {
     output <- cbind(non_species_columns,
                     species_columns)
     
-    file_name = paste0("species_ID_", time_point, ".csv")
+    file_name = paste0(time_point, ".csv")
     
     write.csv(output,
               here("results", paste0("species_ID_", threshold, "_threshold"), file_name))
