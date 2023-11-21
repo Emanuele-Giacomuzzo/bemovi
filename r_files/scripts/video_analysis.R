@@ -13,7 +13,7 @@ rm(list = ls())
 
 #Important parameters that need to be changed 
 min_threshold_input = 13 #Needs to be 13 for Col, Eug, Eup, Pau, Pca, Spi te, Tet. Needs to be 40 for Ble, Cep, Spi. 
-to.data.input <- "/media/mendel-himself/ID_061_Ema2/AHSize/13_threshold_analysis/t0/"
+to.data.input <- "/media/mendel-himself/ID_061_Ema2/AHSize/13_threshold_analysis/t0/" #Important: keep the slash at th end
 
 
 
